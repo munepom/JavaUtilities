@@ -53,49 +53,50 @@ public class MiscUtility {
 		return charset;
 	}
 
-	public void convertString(Path in_file_path, Path out_file_path, Charset out_charset) {
+	/**
+	 * Path 対象のファイルの文字エンコードを判定して返します。<br />
+	 * @param file_path
+	 * @return : Charset or null
+	 */
+	public Charset detectCharset(Path file_path) {
+		// どのようなエンコーディングの文字列が来るか分からないので、一旦 ISO-8859-1 で読み込む。
+		List<String> in_list = null;
 		try {
-			System.out.println("StringEncodingConverter Timer Start ---------------------");
-			long timerStart = System.currentTimeMillis();
-			// どのようなエンコーディングの文字列が来るか分からないので、一旦 バイナリ化する。
-			List<String> in_list = Files.readAllLines(in_file_path, EnumCharset.Latain1.getCharset());
-//			Optional<List<String>> opt = Optional.ofNullable(in_list);
-
-			String document = String.join("", in_list);
-			System.out.println(document);
-			byte[] docBytesLatain1 = document.getBytes(EnumCharset.Latain1.getCharset().name());
-			// 文字コード解析
-			Charset in_charset = detectCharset(docBytesLatain1);
-			if( in_charset == null ){
-				// 判別できない場合、強制的に UTF-8 とする。
-				System.out.println("ファイルの文字コードを判別できません！");
-				in_charset = EnumCharset.UTF8.getCharset();
-			}
-			System.out.println("in_charset : " + in_charset.name());
-
-			// UTF-8 の文字列に変換すれば、new String( str.getByte("変換したい文字エンコーディング"), "変換したい文字エンコーディング" ) で変換可能。
-			String outputStr = "";
-			if( in_charset.equals( out_charset ) ){
-				outputStr = decodeString( docBytesLatain1, out_charset);
-			}
-			else {
-				outputStr =  decodeString( decodeString2UTF8( docBytesLatain1, in_charset ).getBytes(out_charset), out_charset );
-			}
-			long timerEnd = System.currentTimeMillis();
-			System.out.printf("convert done... %d ms\n", timerEnd - timerStart );
-			System.out.println("StringEncodingConverter Timer end -----------------------");
-
-			System.out.printf("out_charset : %s\n", out_charset);
-			System.out.printf("document_out is as below......\n%s\n", outputStr);
-
-			Files.write(out_file_path, Files.readAllLines(in_file_path, in_charset), out_charset, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-		}
-		catch (IOException e){
+			in_list = Files.readAllLines(file_path, EnumCharset.Latain1.getCharset());
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		finally {
+		String document = String.join("", in_list);
+
+		byte[] docBytesLatain1 = null;
+		try {
+			docBytesLatain1 = document.getBytes(EnumCharset.Latain1.getCharset().name());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
 		}
 
+		// 文字コード解析
+		Charset charset = detectCharset(docBytesLatain1);
+		System.out.printf("Charset of %s : %s\n", file_path, charset);
+		return detectCharset(docBytesLatain1);
+	}
+
+	/**
+	 * 対象ファイルの文字コードを変換して指定ファイルへ保存します。
+	 * @param in_file_path
+	 * @param out_file_path
+	 * @param out_charset
+	 */
+	public void convertString(Path in_file_path, Path out_file_path, Charset out_charset) {
+		try {
+			Optional<Charset> opt = Optional.ofNullable(detectCharset(in_file_path));
+			Charset in_charset = opt.orElseThrow(() -> new PuyoException("文字コード判別不可能！"));
+			System.out.printf("out_charset : %s\n", out_charset);
+			Files.write(out_file_path, Files.readAllLines(in_file_path, in_charset), out_charset, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		}
+		catch (IOException | PuyoException e){
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -114,7 +115,11 @@ public class MiscUtility {
 		return "";
 	}
 
-
+	/**
+	 * ISO-8859-1 エンコードの byte 配列を UTF-8 文字列へ変換します
+	 * @param bytesLatain1
+	 * @return
+	 */
 	public String decodeString2UTF8(byte[] bytesLatain1) {
 		return decodeString2UTF8(bytesLatain1, EnumCharset.UTF8.getCharset());
 	}

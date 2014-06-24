@@ -1,24 +1,17 @@
 package com.munepuyo;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.spi.CharsetProvider;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class MiscUtility {
 
@@ -89,8 +82,9 @@ public class MiscUtility {
 	 */
 	public void convertString(Path in_file_path, Path out_file_path, Charset out_charset) {
 		try {
-			Optional<Charset> opt = Optional.ofNullable(detectCharset(in_file_path));
-			Charset in_charset = opt.orElseThrow(() -> new PuyoException("文字コード判別不可能！"));
+			Charset in_charset = Optional.ofNullable(detectCharset(in_file_path))
+								.orElseThrow(() -> new PuyoException("文字コード判別不可能！"))
+			;
 			System.out.printf("out_charset : %s\n", out_charset);
 			Files.write(out_file_path, Files.readAllLines(in_file_path, in_charset), out_charset, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
 		}

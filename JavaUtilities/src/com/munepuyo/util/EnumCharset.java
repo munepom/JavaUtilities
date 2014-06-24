@@ -1,7 +1,14 @@
-package com.munepuyo;
+package com.munepuyo.util;
 
 import java.nio.charset.Charset;
 
+/**
+ *
+ * Enums of Charset
+ *
+ * @author munepuyo
+ *
+ */
 public enum EnumCharset {
 	UTF8 (Charset.forName("UTF-8")),
 	CP932 (Charset.forName("Windows-31J")),

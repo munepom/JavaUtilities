@@ -1,5 +1,12 @@
-package com.munepuyo;
+package com.munepuyo.util;
 
+/**
+ *
+ * Enums of line feed
+ *
+ * @author munepuyo
+ *
+ */
 public enum EnumLineFeed {
 	CR("\r"),
 	LF("\n"),

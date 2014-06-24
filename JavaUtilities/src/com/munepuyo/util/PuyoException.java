@@ -1,5 +1,12 @@
-package com.munepuyo;
+package com.munepuyo.util;
 
+/**
+ *
+ * Exception
+ *
+ * @author munepuyo
+ *
+ */
 @SuppressWarnings("serial")
 public class PuyoException extends Exception {
 

@@ -1,4 +1,4 @@
-package com.munepuyo.util;
+package com.munepuyo.util.string;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -7,11 +7,18 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nonnull;
+
+import com.munepuyo.enums.EnumCharset;
+import com.munepuyo.util.PuyoException;
 
 /**
  *
@@ -20,7 +27,62 @@ import java.util.Optional;
  * @author munepuyo
  *
  */
-public class MiscUtility {
+public class StringUtility {
+
+	/**
+	 * CSV をパースします (囲み文字無し)
+	 * @param s
+	 * @return
+	 */
+	public String[] parseCsv(String s) {
+		return parseString(s, ",", "");
+	}
+
+	/**
+	 * 指定囲み文字を考慮して、CSV をパースします
+	 * @param s
+	 * @param enclosure
+	 * @return
+	 */
+	public String[] parseCsv(String s, String enclosure) {
+		return parseString(s, ",", enclosure);
+	}
+
+	/**
+	 * 指定区切り文字で文字列を区切ります。
+	 * @param s : 区切られる文字列
+	 * @param delimiter : 区切り文字
+	 * @param enclosure : 囲み文字
+	 * @return
+	 */
+	public String[] parseString(String s, String delimiter, @Nonnull String enclosure)
+	{
+		//TODO: 正規表現改良
+		String format = "(?<=%s|^)([^%s]*)(?=%s|$)";
+		String reg_delimiter = String.format(format, delimiter, delimiter, delimiter);
+
+		if( enclosure != null && enclosure.length() > 0 ) {
+			String format_enclosure = "%s([^%s]*)%s";
+			String reg_enclosure = String.format(format_enclosure, enclosure, enclosure, enclosure);
+			reg_delimiter = reg_enclosure + "|" + reg_delimiter;
+		}
+
+		Pattern p = Pattern.compile(reg_delimiter);
+		Matcher m = p.matcher(s);
+
+		ArrayList<String> s_list = new ArrayList<>();
+		String tmp_s = "";
+		while( m.find() ) {
+			tmp_s = m.group();
+			System.out.printf("tmp_s -> [%s]\n", tmp_s);
+			if( tmp_s.startsWith(enclosure) && tmp_s.endsWith(enclosure) ) {
+				tmp_s = tmp_s.substring(1, tmp_s.length() - 1);
+				System.out.printf("removed enclosure from tmp_s -> [%s]\n", tmp_s);
+			}
+			s_list.add(tmp_s);
+		}
+		return s_list.toArray(new String[0]);
+	}
 
 	/**
 	 * String の byte 配列から文字コードを判別して返します
@@ -148,11 +210,13 @@ public class MiscUtility {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		MiscUtility util = new MiscUtility();
-		Path in_file_path = Paths.get(".", "data", "EUC_JP.txt");
-		Path out_file_path = Paths.get(".", "data", "EUC_JP_2_W31J.txt");
-		Charset out_charset = EnumCharset.CP932.getCharset();
-		util.convertString(in_file_path, out_file_path, out_charset);
+		StringUtility util = new StringUtility();
+//		Path in_file_path = Paths.get(".", "data", "EUC_JP.txt");
+//		Path out_file_path = Paths.get(".", "data", "EUC_JP_2_W31J.txt");
+//		Charset out_charset = EnumCharset.CP932.getCharset();
+//		util.convertString(in_file_path, out_file_path, out_charset);
+
+		util.parseCsv("テスト,\" :,: \",\" , , , \",\"\",\" テステス \"", "\"");
 	}
 
 }

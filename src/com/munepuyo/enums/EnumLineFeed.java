@@ -1,4 +1,4 @@
-package com.munepuyo.util;
+package com.munepuyo.enums;
 
 /**
  *

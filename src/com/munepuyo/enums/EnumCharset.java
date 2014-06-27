@@ -1,4 +1,4 @@
-package com.munepuyo.util;
+package com.munepuyo.enums;
 
 import java.nio.charset.Charset;
 

@@ -15,8 +15,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-
 import com.munepuyo.enums.EnumCharset;
 import com.munepuyo.util.PuyoException;
 
@@ -55,8 +53,12 @@ public class StringUtility {
 	 * @param enclosure : 囲み文字
 	 * @return
 	 */
-	public String[] parseString(String s, String delimiter, @Nonnull String enclosure)
+	public String[] parseString(String s, String delimiter, String enclosure)
 	{
+		if( delimiter == null || delimiter.length() == 0 ) {
+			return new String[]{ s };
+		}
+
 		//TODO: 正規表現改良
 		String format = "(?<=%s|^)([^%s]*)(?=%s|$)";
 		String reg_delimiter = String.format(format, delimiter, delimiter, delimiter);
